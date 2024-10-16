@@ -1,0 +1,329 @@
+/* styles.css */
+
+/* CSS Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Body Styles */
+html,
+body {
+    height: 100%;
+    font-family: 'Montserrat', sans-serif;
+    background-image: linear-gradient(68.4deg, rgba(248, 182, 204, 1) 0.5%, rgba(192, 198, 230, 1) 49%, rgba(225, 246, 240, 1) 99.8%);
+    color: #4A4A4A;
+    /* Dark Gray for text */
+    overflow-x: hidden;
+    line-height: 1.6;
+    position: relative;
+}
+
+/* Optional Wave Effect */
+body::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(68.4deg, rgba(248, 182, 204, 1) 0.5%, rgba(192, 198, 230, 1) 49%, rgba(225, 246, 240, 1) 99.8%);
+    clip-path: ellipse(150% 70% at 50% 30%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Header Styles */
+header {
+    background-color: transparent;
+    padding: 20px 0;
+    text-align: center;
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    align-items: center;
+    
+}
+
+header a{
+    width: 170px;
+    padding: 10px 25px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1rem;
+    font-weight: 600;
+    background-color: #00D1B2;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    margin: 0px 20px 0px 0px;
+    text-decoration: none;
+    justify-self: end;
+}
+
+header h1 {
+    color: #FFFFFF;
+    /* White for contrast */
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    line-height: 1.2;
+}
+
+/* Main Container */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Positive Change */
+.positive-change {
+    color: #28a745;
+    /* Green */
+}
+
+/* Negative Change */
+.negative-change {
+    color: #dc3545;
+    /* Red */
+}
+
+/* Stock Input Section */
+#stock-input {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 60px;
+    margin: 40px auto;
+    border-radius: 10px;
+    max-width: 600px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#stock-input h2 {
+    color: #4A4A4A;
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 30px;
+}
+
+#stock-form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+#stock-form input {
+    width: 100%;
+    max-width: 300px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 30px;
+    margin: 10px;
+    font-size: 1rem;
+    background-color: #fff;
+}
+
+#stock-form input::placeholder {
+    color: #999;
+}
+
+#stock-form input:focus {
+    outline: none;
+    border-color: #00D1B2;
+    /* Vibrant Teal */
+    box-shadow: 0 0 5px rgba(0, 209, 178, 0.5);
+}
+
+#stock-form button {
+    padding: 15px 30px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1rem;
+    background-color: #00D1B2;
+    /* Vibrant Teal */
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    margin: 10px;
+}
+
+#stock-form button:hover {
+    background-color: #00A48A;
+    /* Slightly darker teal */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+button i {
+    margin-right: 5px;
+}
+
+/* Portfolio Results Section */
+#portfolio-results {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 60px;
+    margin: 40px auto;
+    border-radius: 10px;
+    max-width: 800px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#portfolio-results h2 {
+    color: #4A4A4A;
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+#portfolio-summary {
+    background-color: #F4F4F9;
+    padding: 30px;
+    margin-top: 40px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+#portfolio-summary h3 {
+    color: #4A4A4A;
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+
+#portfolio-summary p {
+    color: #4A4A4A;
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+}
+
+/* Stock List Styles */
+#stock-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.stock-item {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: #F4F4F9;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    transition: transform 0.2s ease, background-color 0.3s ease;
+}
+
+.stock-item:hover {
+    background-color: #E0E0E5;
+    transform: translateY(-2px);
+}
+
+.stock-item span {
+    flex: 1 1 20%;
+    text-align: center;
+    color: #4A4A4A;
+    font-size: 1rem;
+    margin-bottom: 10px;
+}
+
+.stock-item button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    background-color: #FF6B6B;
+    /* Soft Coral */
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    font-size: 1rem;
+}
+
+.stock-item button:hover {
+    background-color: #E65A5A;
+    /* Slightly darker coral */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Chart Section */
+#portfolio-chart {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 60px;
+    margin: 40px auto;
+    border-radius: 10px;
+    max-width: 1000px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* No need to set display: none; here since it's handled inline in HTML or via JavaScript */
+}
+
+#portfolio-chart h2 {
+    color: #4A4A4A;
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+#chart-headline {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #4A4A4A;
+    text-align: center;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    margin-top: 40px;
+    height: 400px;
+    /* Removed display: none; to ensure the chart renders correctly when the section is displayed */
+}
+
+canvas#performanceChart {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+
+    #stock-input,
+    #portfolio-results,
+    #portfolio-chart {
+        padding: 40px;
+    }
+
+    #stock-form input,
+    #stock-form button {
+        width: 100%;
+        max-width: none;
+        margin: 10px 0;
+    }
+
+    .stock-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .stock-item span {
+        flex: 1 1 100%;
+        text-align: left;
+    }
+
+    .stock-item button {
+        align-self: flex-end;
+        margin-top: 10px;
+    }
+}
+
+/* AOS Animations */
+[data-aos] {
+    opacity: 0;
+    transition-property: transform, opacity;
+}
+
+[data-aos].aos-animate {
+    opacity: 1;
+}

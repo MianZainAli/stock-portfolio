@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Meta Tags -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Stock Portfolio</title>
+
+    <!-- Google Fonts (Montserrat) -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
+
+    <!-- Animate.css (Optional, if you use it) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/portfolio.css') }}">
+
+    <!-- AOS CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="portfolio.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Luxon Library -->
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js"></script>
+    <!-- Date Adapter for Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.0"></script>
+
+
+</head>
+
+<body>
+    <header>
+        <div></div>
+        <h1>Portfolio</h1>
+        <a class="btn" href="{{ url_for('index') }}">Home</a>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- Add New Stock Section -->
+            <section id="new-stock-section" data-aos="fade-up">
+                <h2>Add Stock</h2>
+                <form id="new-stock-form">
+                    <input type="text" id="new-stock-symbol" placeholder="Stock Symbol (e.g., TSLA)" required />
+                    <input type="number" id="new-stock-quantity" placeholder="Quantity" min="1" required />
+                    <input type="number" id="new-stock-purchase-price" placeholder="Purchase Price" step="0.01" min="0" required />
+                    <button type="submit"><i class="fas fa-plus-circle"></i> Add Stock</button>
+                </form>
+            </section>
+
+            <section id="saved-stock-section">
+                <h2>Your Holdings</h2>
+                <div class="stock-table">
+                    <div class="stock-row header">
+                        <div class="stock-name">Ticker</div>
+                        <div class="stock-quantity">Quantity</div>
+                        <div class="stock-purchase-price">Purchase Price</div>
+                        <div class="stock-current-price">Current Price</div>
+                        <div class="stock-target">Target Price</div>
+                        <div class="stock-unrealized">Unrealized Gain/Loss</div>
+                        <div class="stock-actions">Actions</div>
+                    </div>
+                    <!-- Example row -->
+                    <!-- <div class="stock-row">
+                        <div class="stock-name">AAPL</div>
+                        <div class="stock-quantity">10</div>
+                        <div class="stock-price">$145.00</div>
+                        <div class="stock-price">$145.00</div>
+                        <div class="stock-target">$150.00</div>
+                        <div class="stock-unrealized">$50.00</div>
+                        <div class="stock-actions">
+                            <button class="remove-btn" onclick="removeStock(this)">Remove</button>
+                        </div>
+                    </div> -->
+                    <!-- More rows can be dynamically generated -->
+                </div>
+            </section>
+            
+
+            <!-- Portfolio Summary Section -->
+            <section id="portfolio-summary-section" >
+                <h2>Portfolio Summary</h2>
+                <div id="portfolio-summary">
+                    <h3>Total Portfolio Value: <span id="total-portfolio-value">$0</span></h3>
+                    <!-- Other summary details can go here -->
+                </div>
+            </section>
+
+
+            <section id="portfolio-chart" style="display: none;"> <!-- Hide the entire section initially -->
+                <h2>Portfolio Performance</h2>
+                <!-- Chart Headline -->
+                <h3 id="chart-headline" style="text-align: center;"></h3>
+
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- AOS JS -->
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+
+    <!-- Initialize AOS -->
+    <script>
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true,
+        });
+    </script>
+
+
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/portfolio.js') }}"></script></body>
+</body>
+
+</html>

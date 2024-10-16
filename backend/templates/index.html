@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Meta Tags -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Projected Portfolio</title>
+
+    <!-- Google Fonts (Montserrat) -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
+
+    <!-- Animate.css (Optional, if you use it) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+    <!-- AOS CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+
+    <!-- Your Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
+        integrity="sha384-DyZ88mC6Up2uqS4h/KRgHuoeGwBcD4Ng9SiP4dIRy0EXTlnuz47vAwmeGwVChigm" crossorigin="anonymous" />
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Luxon Library -->
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js"></script>
+    <!-- Date Adapter for Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.0"></script>
+
+</head>
+
+<body>
+    <header>
+        <div></div>
+        <h1>Projected Portfolio</h1>
+        <a href={{ url_for('portfolio') }}>My Portfolio</a>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- Stock Input Section -->
+            <section id="stock-input" data-aos="fade-up">
+                <h2>Enter Your Stocks</h2>
+                <form id="stock-form">
+                    <input type="text" id="stock-symbol" placeholder="Stock Symbol (e.g., AAPL)" required />
+                    <input type="number" id="stock-quantity" placeholder="Quantity" min="1" required />
+                    <button type="submit"><i class="fas fa-plus-circle"></i> Add Stock</button>
+                </form>
+            </section>
+
+            <!-- Portfolio Results Section -->
+            <section id="portfolio-results" data-aos="fade-up">
+                <h2>Added Stocks</h2>
+                <ul id="stock-list">
+                    <!-- Stock items will appear here -->
+                </ul>
+                <div id="portfolio-summary">
+                    <!-- Portfolio summary and projections will appear here -->
+                </div>
+            </section>
+
+            <!-- Chart Section -->
+            <section id="portfolio-chart" style="display: none;"> <!-- Hide the entire section initially -->
+                <h2>Portfolio Performance</h2>
+                <!-- Chart Headline -->
+                <h3 id="chart-headline" style="text-align: center;"></h3>
+
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- AOS JS -->
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+
+    <!-- Initialize AOS -->
+    <script>
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true,
+        });
+    </script>
+
+    <!-- Your Custom JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script></body>
+
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio</title>
+</head>
+<body>
+
+    <h1>Welcome to Your Portfolio</h1>
+
+    <!-- User Profile Section -->
+    <div id="user-profile" style="display: none;">
+        <h2 id="user-name"></h2>
+        <img id="user-picture" src="" alt="User Profile Picture">
+        <p id="user-email"></p>
+        <button id="logout-btn">Logout</button>
+    </div>
+
+    <!-- Login Section -->
+    <div id="login-section">
+        <button id="login-btn">Login with Google</button>
+    </div>
+
+    <script>
+        document.getElementById('login-btn').addEventListener('click', function() {
+            // Redirect to Flask back-end for login
+            window.location.href = 'http://127.0.0.1:5000/login';
+        });
+
+        // On page load, check if user is logged in by trying to fetch user data
+        window.onload = function() {
+            fetch('http://127.0.0.1:5000/api/get-user', {
+                method: 'GET',
+                credentials: 'include',  // Include cookies/session
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Not logged in');
+                }
+            })
+            .then(userData => {
+                // Show the user profile section
+                document.getElementById('user-profile').style.display = 'block';
+                document.getElementById('login-section').style.display = 'none';
+
+                // Populate user data
+                document.getElementById('user-name').textContent = userData.name;
+                document.getElementById('user-picture').src = userData.picture;
+                document.getElementById('user-email').textContent = userData.email;
+            })
+            .catch(error => {
+                console.error('Error fetching user data:', error);
+            });
+        };
+
+        // Logout functionality
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            fetch('http://127.0.0.1:5000/logout', {
+                method: 'POST',
+                credentials: 'include'
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Reload page to update state
+                    window.location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error logging out:', error);
+            });
+        });
+    </script>
+
+</body>
+</html>

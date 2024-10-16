@@ -1,0 +1,276 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Body Styles */
+html,
+body {
+    height: 100%;
+    font-family: 'Montserrat', sans-serif;
+    background-image: linear-gradient(68.4deg, rgba(248, 182, 204, 1) 0.5%, rgba(192, 198, 230, 1) 49%, rgba(225, 246, 240, 1) 99.8%);
+    color: #4A4A4A;
+    /* Dark Gray for text */
+    overflow-x: hidden;
+    line-height: 1.6;
+    position: relative;
+}
+
+/* Optional Wave Effect */
+body::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(68.4deg, rgba(248, 182, 204, 1) 0.5%, rgba(192, 198, 230, 1) 49%, rgba(225, 246, 240, 1) 99.8%);
+    clip-path: ellipse(150% 70% at 50% 30%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Header Styles */
+
+/* Header Styles */
+header {
+    background-color: transparent;
+    padding: 20px 0;
+    text-align: center;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    
+}
+
+header a{
+    width: 170px;
+    padding: 10px 25px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1rem;
+    font-weight: 600;
+    background-color: #00D1B2;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    margin: 0px 20px 0px 0px;
+    text-decoration: none;
+    justify-self: end;
+}
+
+header h1 {
+    color: #FFFFFF;
+    /* White for contrast */
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    line-height: 1.2;
+}
+
+/* Main Container */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+#new-stock-section {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 60px;
+    margin: 40px auto;
+    border-radius: 10px;
+    max-width: 600px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#new-stock-section h2 {
+    color: #4A4A4A;
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 30px;
+}
+
+#new-stock-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+#new-stock-form input {
+    width: 100%;
+    max-width: 300px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 30px;
+    margin: 10px;
+    font-size: 1rem;
+    background-color: #fff;
+}
+
+#new-stock-form input::placeholder {
+    color: #999;
+}
+
+#new-stock-form input:focus {
+    outline: none;
+    border-color: #00D1B2;
+    /* Vibrant Teal */
+    box-shadow: 0 0 5px rgba(0, 209, 178, 0.5);
+}
+
+#new-stock-form button {
+    padding: 15px 30px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1rem;
+    background-color: #00D1B2;
+    /* Vibrant Teal */
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    margin: 10px;
+}
+
+#new-stock-form button:hover {
+    background-color: #00A48A;
+    /* Slightly darker teal */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+button i {
+    margin-right: 5px;
+}
+
+
+/* Saved Stock Section */
+#saved-stock-section {
+    margin: 40px auto;
+    max-width: 1000px;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+#saved-stock-section h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+/* Stock Table */
+.stock-table {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Header Row */
+.stock-row.header {
+    font-weight: bold;
+    background-color: #f4f4f9;
+}
+
+/* Stock Row Styling */
+.stock-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: #eaeaea;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.stock-row:hover {
+    background-color: #d4d4d4;
+}
+
+/* Column Styles */
+.stock-name,
+.stock-quantity,
+.stock-purchase-price,
+.stock-current-price,
+.stock-target,
+.stock-unrealized,
+.stock-actions {
+    flex-basis: 25%;
+    text-align: center;
+}
+
+/* Remove Button */
+.remove-btn {
+    background-color: #ff4c4c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.remove-btn:hover {
+    background-color: #e04141;
+}
+
+
+#portfolio-summary-section{
+    margin: 40px auto;
+    max-width: 1000px;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+#portfolio-chart{
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 60px;
+    margin: 40px auto;
+    border-radius: 10px;
+    max-width: 800px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#chart-headline {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #4A4A4A;
+    text-align: center;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    margin-top: 40px;
+    height: 400px;
+    /* Removed display: none; to ensure the chart renders correctly when the section is displayed */
+}
+
+canvas#performanceChart {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Responsive Layout */
+@media (max-width: 768px) {
+    .stock-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .stock-name, .stock-quantity, .stock-purchase-price, .stock-current-price, .stock-target, .stock-unrealized, .stock-actions {
+        flex-basis: 100%;
+        text-align: left;
+    }
+    .stock-actions {
+        text-align: right;
+        margin-top: 10px;
+    }
+}
