@@ -96,9 +96,7 @@ def login():
     session['state'] = state  # Store state in session
     
     redirect_uri = url_for('authorize', _external=True)
-    return google.authorize_redirect(redirect_uri, nonce=nonce, state=state)
-
-from flask import redirect, url_for
+    return google.authorize_redirect(redirect_uri, nonce=nonce, state=state, prompt='login')
 
 
 @app.route('/authorize')
@@ -123,7 +121,7 @@ def authorize():
         
         login_user(user)  # Log the user in (Flask-Login will handle the session)
         session['user'] = userinfo
-        return redirect('http://127.0.0.1:5500/portfolio.html')  # Redirect back to frontend
+        return redirect('/portfolio')  # Redirect back to frontend
     
     return jsonify({'error': 'Authorization failed'}), 400
 
@@ -131,9 +129,11 @@ def authorize():
 @app.route('/logout')
 @login_required
 def logout():
-    logout_user()  # Flask-Login logout
-    session.pop('user', None)
-    return redirect(url_for('index'))
+    print(f"Before logout: {session}")
+    logout_user()
+    session.clear()  # Clears all session data
+    print(f"After logout: {session}")
+    return redirect(url_for('login'))
 
 @app.route('/api/save-holdings', methods=['POST'])
 @login_required
@@ -169,7 +169,6 @@ def save_holdings():
 
     
 @app.route('/api/get-holdings', methods=['GET'])
-@login_required
 def get_holdings():
     try:
         if not current_user.is_authenticated:
@@ -191,6 +190,7 @@ def get_holdings():
         return jsonify({'error': 'Failed to fetch holdings.'}), 500
 
 @app.route('/api/stock/<symbol>/history', methods=['GET'])
+@login_required
 def get_stock_history(symbol):
     try:
         period = request.args.get('period', '1y')
@@ -223,6 +223,7 @@ def index():
     return render_template('index.html')
 
 @app.route('/portfolio')
+@login_required
 def portfolio():
     return render_template('portfolio.html')
 
