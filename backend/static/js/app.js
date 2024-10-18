@@ -169,7 +169,7 @@ function fetchHistoricalData(symbol) {
                 }
             })
             .catch((error) => {
-                alert(`Error fetching historical data for ${symbol}: ${error}`);
+                // alert(`Error fetching historical data for ${symbol}: ${error}`);
                 console.error(`Error fetching historical data for ${symbol}:`, error);
                 reject(error);
             });

@@ -42,8 +42,14 @@ header {
     
 }
 
+.btn-div{
+    display: flex;
+    justify-content: end;
+    gap: 10px;
+}
+
 header a{
-    width: 170px;
+    width: 100px;
     padding: 10px 25px;
     border: none;
     border-radius: 30px;
@@ -53,9 +59,15 @@ header a{
     color: #fff;
     cursor: pointer;
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    margin: 0px 20px 0px 0px;
+    
     text-decoration: none;
     justify-self: end;
+}
+
+.logout-btn{
+    background-color: #ff4c4c;
+    margin: 0px 0px 0px 20px;
+    margin: 0px 20px 0px 0px;
 }
 
 header h1 {
@@ -237,6 +249,11 @@ button i {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+#portfolio-chart h2 {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
 #chart-headline {
     font-size: 1.5rem;
     margin-bottom: 20px;
@@ -257,6 +274,14 @@ button i {
 canvas#performanceChart {
     width: 100% !important;
     height: 100% !important;
+}
+
+.green-text {
+    color: green;
+}
+
+.red-text {
+    color: red;
 }
 
 /* Responsive Layout */

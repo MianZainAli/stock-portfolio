@@ -1,6 +1,7 @@
 # app.py
 
 import os
+import pandas as pd
 import secrets
 from flask import Flask, jsonify, redirect, render_template, request, session, url_for
 from flask_cors import CORS
@@ -133,64 +134,61 @@ def logout():
     logout_user()
     session.clear()  # Clears all session data
     print(f"After logout: {session}")
-    return redirect(url_for('login'))
+    return redirect(url_for('index'))
 
-@app.route('/api/save-holdings', methods=['POST'])
-@login_required
-def save_holdings():
+@app.route('/api/save-stock', methods=['POST'])
+@login_required  # Ensure the user is logged in to save stock
+def save_stock():
     try:
+        # Get the current user's ID
         user_id = current_user.id
-        holdings_data = request.json.get('holdings', [])
-        
-        for holding_data in holdings_data:
-            existing_holding = Holding.query.filter_by(user_id=user_id, symbol=holding_data['symbol']).first()
-            
-            if existing_holding:
-                # Update the existing holding
-                existing_holding.quantity = holding_data['quantity']
-                existing_holding.purchase_price = holding_data['purchasePrice']
-            else:
-                # Add new holding
-                holding = Holding(
-                    symbol=holding_data['symbol'],
-                    quantity=holding_data['quantity'],
-                    purchase_price=holding_data['purchasePrice'],
-                    user_id=user_id
-                )
-                db.session.add(holding)
-        
+
+        # Get stock data from the POST request body (JSON)
+        stock_data = request.json
+        symbol = stock_data.get('symbol').upper()
+        quantity = stock_data.get('quantity')
+        purchase_price = stock_data.get('purchasePrice')
+
+        # Validate input data
+        if not symbol or quantity is None or purchase_price is None:
+            return jsonify({'error': 'Invalid input data'}), 400
+
+        new_holding = Holding(
+            symbol=symbol,
+            quantity=quantity,
+            purchase_price=purchase_price,
+            user_id=user_id
+        )
+        db.session.add(new_holding)
+
         db.session.commit()
-        return jsonify({'message': 'Holdings saved successfully!'}), 200
-    except Exception as e:
-        db.session.rollback()
-        logging.error(f"Error saving holdings: {e}")
-        traceback.print_exc()
-        return jsonify({'error': 'Failed to save holdings.'}), 500
 
-    
-@app.route('/api/get-holdings', methods=['GET'])
-def get_holdings():
+        return jsonify({'message': 'Stock saved successfully!', 'stockid':new_holding.id}), 200
+    except Exception as e:
+        db.session.rollback()  # Rollback in case of error
+        logging.error(f"Error saving stock: {e}")
+        traceback.print_exc()
+        return jsonify({'error': 'Failed to save stock.'}), 500
+
+@app.route('/api/delete-stock/<int:holding_id>', methods=['DELETE'])
+@login_required
+def delete_stock(holding_id):
     try:
-        if not current_user.is_authenticated:
-            return jsonify({'error': 'User not authenticated'}), 401
-
         user_id = current_user.id
-        holdings = Holding.query.filter_by(user_id=user_id).all()
-
-        holdings_list = [{
-            'symbol': holding.symbol,
-            'quantity': holding.quantity,
-            'purchasePrice': holding.purchase_price
-        } for holding in holdings]
-
-        return jsonify(holdings_list), 200
+        # Find the specific holding by its id and user_id
+        holding = Holding.query.filter_by(id=holding_id, user_id=user_id).first()
+        
+        if holding:
+            db.session.delete(holding)
+            db.session.commit()
+            return jsonify({'message': f'Holding {holding.symbol} deleted successfully.'}), 200
+        else:
+            return jsonify({'error': 'Holding not found.'}), 404
     except Exception as e:
-        logging.error(f"Error fetching holdings: {e}")
-        traceback.print_exc()
-        return jsonify({'error': 'Failed to fetch holdings.'}), 500
+        return jsonify({'error': 'Error deleting holding: ' + str(e)}), 500
+
 
 @app.route('/api/stock/<symbol>/history', methods=['GET'])
-@login_required
 def get_stock_history(symbol):
     try:
         period = request.args.get('period', '1y')
@@ -204,18 +202,89 @@ def get_stock_history(symbol):
         hist['Date'] = hist['Date'].dt.strftime('%Y-%m-%d')
         hist = hist[['Date', 'Close']]
         data = hist.to_dict(orient='records')
-        
 
         logging.debug(f"Historical data for {symbol}: {data[:5]}...")  # Log first 5 records
 
         return jsonify(data), 200
-    except ValueError as ve:
-        logging.error(f"ValueError: {ve}")
-        return jsonify({'error': str(ve)}), 404
     except Exception as e:
         logging.error(f"Error fetching historical data for {symbol}: {e}")
         traceback.print_exc()
         return jsonify({'error': f"Failed to fetch historical data for {symbol}. {str(e)}"}), 500
+
+@app.route('/api/get-holdings', methods=['GET'])
+@login_required
+def get_holdings():
+    try:
+        user_id = current_user.id
+        holdings = Holding.query.filter_by(user_id=user_id).all()
+        
+        holdings_list = []
+
+        for holding in holdings:
+            try:
+                # Fetch current stock data (e.g., current price)
+                stock = yf.Ticker(holding.symbol)
+                info = stock.info
+
+                current_price = (
+                    info.get('regularMarketPrice') or
+                    info.get('currentPrice') or
+                    info.get('previousClose')
+                )
+                if current_price is None:
+                    current_price = 0  # Set to 0 if unable to fetch
+
+                # Calculate target price
+                current_pe = info.get('trailingPE') or 0
+                forward_pe = info.get('forwardPE') or current_pe
+                target_price = (current_price * (current_pe / forward_pe)) if forward_pe > 0 else current_price
+
+                # Calculate unrealized gain/loss
+                unrealized_gain_loss = (current_price - holding.purchase_price) * holding.quantity
+
+                # Fetch historical data in one go
+                historical_data = yf.download(holding.symbol, period="1y")
+                historical_data.reset_index(inplace=True)
+                historical_data['Date'] = historical_data['Date'].dt.strftime('%Y-%m-%d')
+                historical_data = historical_data[['Date', 'Close']].to_dict(orient='records')
+
+                holdings_list.append({
+                    'id': holding.id,
+                    'symbol': holding.symbol,
+                    'quantity': holding.quantity,
+                    'purchase_price': holding.purchase_price,
+                    'currentPE': current_pe,
+                    'forwardPE': forward_pe,
+                    'current_price': current_price,
+                    'target_price': target_price,
+                    'unrealized_gain_loss': unrealized_gain_loss,
+                    'historicalData': historical_data  # Include historical data
+                })
+            
+            except Exception as e:
+                # If fetching stock data fails, add a message to the holdings
+                holdings_list.append({
+                    'id': holding.id,
+                    'symbol': holding.symbol,
+                    'quantity': holding.quantity,
+                    'purchase_price': holding.purchase_price,
+                    'current_price': None,
+                    'target_price': None,
+                    'unrealized_gain_loss': None,
+                    'historicalData': [],
+                    'error': f'Error fetching data for {holding.symbol}: {str(e)}'
+                })
+        
+        return jsonify(holdings_list), 200
+
+    except Exception as e:
+        return jsonify({'error': 'Unable to fetch holdings: ' + str(e)}), 500
+
+
+
+@app.route('/auth')
+def auth():
+    return render_template('login.html')
 
 
 @app.route('/')

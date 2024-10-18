@@ -2,16 +2,15 @@ let holdings = [];
 let holdingsHistory = {};
 let performanceChart = null;
 
-
 const newStockForm = document.getElementById('new-stock-form');
 const newStockSymbol = document.getElementById('new-stock-symbol');
 const newStockQuantity = document.getElementById('new-stock-quantity');
 const newStockPurchasePrice = document.getElementById('new-stock-purchase-price')
 const savedStockSection = document.querySelector('.stock-table');
 
-
 document.addEventListener('DOMContentLoaded', () => {
-    
+    loadHoldings();
+
     newStockForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const symbol = newStockSymbol.value.toUpperCase().trim();
@@ -24,27 +23,59 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
 function removeStock(button) {
-    // Get the parent row of the clicked button and remove it
     const row = button.closest('.stock-row');
-    row.remove();
+    const holdingId = row.getAttribute('data-holding-id');
+    const stockSymbol = row.querySelector('.stock-name').innerText;
+    fetch(`http://127.0.0.1:5000/api/delete-stock/${holdingId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            credentials: 'include',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            row.remove();
+            console.log(' before holdings:', holdings);
+            holdings = holdings.filter(stock => stock.id != holdingId);
+            console.log('deleted history:', holdingsHistory[stockSymbol]);
+            const remainingHoldings = holdings.filter(stock => stock.symbol === stockSymbol);
+
+            // If no more holdings for this stock symbol, delete its history
+            if (remainingHoldings.length === 0) {
+                delete holdingsHistory[stockSymbol];
+            }
+
+            updatePortfolioSummary();
+            toggleChartVisibility();
+            updatePerformanceChart();
+
+            console.log(`Holding ${stockSymbol} removed successfully.`);
+        } else if (data.error) {
+            alert(`Error: ${data.error}`);
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting holding:', error);
+        alert('Failed to delete holding from the database.');
+    });
 }
 
 function addStock(event) {
     event.preventDefault();
 
-    // Get the stock symbol and quantity from input fields
     const stockSymbol = newStockSymbol.value.trim().toUpperCase();
     const stockQuantity = newStockQuantity.value;
     const StockPurchasePrice = newStockPurchasePrice.value;
 
-    // Validate inputs
     if (stockSymbol === '' || stockQuantity === '' || isNaN(stockQuantity) || stockQuantity <= 0) {
         alert('Please enter a valid stock symbol and quantity.');
         return;
     }
 
-    // Call backend API to get stock information
     fetch(`http://127.0.0.1:5000/api/stock/${stockSymbol}`)
         .then(response => {
             if (!response.ok) {
@@ -52,22 +83,60 @@ function addStock(event) {
             }
             return response.json();
         })
-        .then(stockData => { 
-            console.log(stockData)
-            // Extract relevant information from the response
+        .then(stockData => {
             const { currentPE, currentPrice, forwardPE } = stockData;
-
-            // Create a new row for the stock
-            const newRow = document.createElement('div');
-            newRow.classList.add('stock-row');
-
-            // Calculate unrealized gain/loss
             const unrealizedGainLoss = ((currentPrice - StockPurchasePrice) * stockQuantity).toFixed(2);
-
             const priceTarget = calculatePriceTarget(stockData);
 
-            console.log("priceTarget:", priceTarget)
-            // Add columns for the stock details
+            const newRow = document.createElement('div');
+            newRow.classList.add('stock-row');
+        
+
+            fetch('http://127.0.0.1:5000/api/save-stock', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    credentials: 'include',
+                },
+                body: JSON.stringify({
+                    symbol: stockSymbol,
+                    quantity: stockQuantity,
+                    purchasePrice: StockPurchasePrice,
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                newRow.setAttribute('data-holding-id', data.stockid);
+                const stock = {
+                    id: data.stockid, 
+                    symbol: stockSymbol,
+                    quantity: stockQuantity,
+                    currentPE: currentPE,
+                    forwardPE: forwardPE,
+                    purchasePrice: StockPurchasePrice,
+                    currentPrice: currentPrice,
+                    targetPrice: priceTarget
+                };
+    
+                holdings.push(stock);
+                if (!holdingsHistory[stockSymbol]) {
+                    holdingsHistory[stockSymbol] = {
+                        historicalData: []
+                    };
+                }
+
+                updatePortfolioSummary();
+
+                fetchHistoricalData(stockSymbol).then(() => {
+                    toggleChartVisibility(); // Show the chart section before updating the chart
+                    updatePerformanceChart();
+                })
+            })
+            .catch(error => {
+                console.error('Error saving stock to database:', error);
+                alert('Failed to save stock to the database.');
+            });
+
             newRow.innerHTML = `
                 <div class="stock-name">${stockSymbol}</div>
                 <div class="stock-quantity">${stockQuantity}</div>
@@ -79,35 +148,9 @@ function addStock(event) {
                     <button class="remove-btn" onclick="removeStock(this)">Remove</button>
                 </div>`
             ;
-
             // Append the new row to the holdings section
             savedStockSection.appendChild(newRow);
 
-
-            const stock = {
-                symbol: stockSymbol,
-                quantity: stockQuantity,
-                currentPE: currentPE,
-                forwardPE: forwardPE,
-                purchasePrice: StockPurchasePrice,
-                currentPrice: currentPrice,
-                targetPrice: priceTarget
-            };
-
-            holdings.push(stock);
-            if (!holdingsHistory[stockSymbol]) {
-                holdingsHistory[stockSymbol] = {
-                    historicalData: []
-                };
-            }            
-            updatePortfolioSummary();
-
-            fetchHistoricalData(stockSymbol).then(() => {
-                toggleChartVisibility(); // Show the chart section before updating the chart
-                updatePerformanceChart();
-            })
-
-            // Clear the input fields after submission
             newStockSymbol.value = '';
             newStockQuantity.value = '';
             newStockPurchasePrice.value = '';
@@ -115,6 +158,62 @@ function addStock(event) {
         .catch(error => {
             console.error('There was a problem with the fetch operation:', error);
             alert('Failed to fetch stock data. Please try again.');
+        });
+}
+
+
+function loadHoldings() {
+    fetch('http://127.0.0.1:5000/api/get-holdings')
+        .then(response => response.json())
+        .then(data => {
+            holdings = []; 
+            holdingsHistory = {}; 
+
+            data.forEach(stock => {
+                const newRow = document.createElement('div');
+                newRow.classList.add('stock-row');
+                newRow.setAttribute('data-holding-id', stock.id);
+                newRow.innerHTML = `
+                    <div class="stock-name">${stock.symbol}</div>
+                    <div class="stock-quantity">${stock.quantity}</div>
+                    <div class="stock-purchase-price">$${stock.purchase_price.toFixed(2)}</div>
+                    <div class="stock-current-price">$${stock.current_price.toFixed(2)}</div>
+                    <div class="stock-target-price">$${stock.target_price.toFixed(2)}</div>
+                    <div class="stock-unrealized">$${stock.unrealized_gain_loss.toFixed(2)}</div>
+                    <div class="stock-actions">
+                        <button class="remove-btn" onclick="removeStock(this)">Remove</button>
+                    </div>`;
+
+                savedStockSection.appendChild(newRow);
+
+                holdings.push({
+                    id: stock.id,
+                    symbol: stock.symbol,
+                    quantity: stock.quantity,
+                    currentPE: stock.currentPE,
+                    forwardPE: stock.forwardPE,
+                    purchasePrice: stock.purchase_price,
+                    currentPrice: stock.current_price,
+                    targetPrice: stock.target_price, 
+                });
+
+                if (!holdingsHistory[stock.symbol]) {
+                    holdingsHistory[stock.symbol] = {
+                        historicalData: stock.historicalData || []
+                    };
+                } 
+                console.log('holdingshistory:', holdingsHistory);
+            });
+
+            console.log('holdings data:', holdingsHistory);
+
+            updatePortfolioSummary();
+            toggleChartVisibility(); 
+            updatePerformanceChart();
+        })
+        .catch(error => {
+            console.error('Error fetching holdings:', error);
+            alert('Failed to load holdings.');
         });
 }
 
@@ -132,10 +231,10 @@ function calculatePriceTarget(data) {
 
 
 function updatePortfolioSummary() {
-    let totalInvestment = 0; // Total amount spent on purchasing stocks
-    let totalCurrentValue = 0; // Total value of stocks at the current price
-    let totalProjectedValue = 0; // Total projected value at target price
-    let totalUnrealizedGainLoss = 0; // Total unrealized gain or loss
+    let totalInvestment = 0; 
+    let totalCurrentValue = 0;
+    let totalProjectedValue = 0; 
+    let totalUnrealizedGainLoss = 0; 
 
     // Loop through the holdings and calculate total values
     holdings.forEach(stock => {
@@ -155,13 +254,20 @@ function updatePortfolioSummary() {
     const projectedChange = totalProjectedValue - totalCurrentValue;
     const projectedPercentageChange = ((totalProjectedValue - totalCurrentValue) / totalCurrentValue) * 100;
 
+    const currentChangeColor = currentPercentageChange >= 0 ? 'green-text' : 'red-text';
+    const projectedChangeColor = projectedPercentageChange >= 0 ? 'green-text' : 'red-text';
+
     // Update the HTML to display the enhanced portfolio summary
     document.getElementById('portfolio-summary').innerHTML = `
         <h3>Total Investment: $${totalInvestment.toFixed(2)}</h3>
         <h3>Total Current Value: $${totalCurrentValue.toFixed(2)}</h3>
-        <h3>Total Unrealized Gain/Loss: $${totalUnrealizedGainLoss.toFixed(2)} (${currentPercentageChange.toFixed(2)}%)</h3>
+        <h3>Total Unrealized Gain/Loss: $${totalUnrealizedGainLoss.toFixed(2)}
+            <span class="${currentChangeColor}">(${currentPercentageChange.toFixed(2)}%)</span>
+        </h3>
         <h3>Total Projected Value: $${totalProjectedValue.toFixed(2)}</h3>
-        <h3>Projected Change: $${projectedChange.toFixed(2)} (${projectedPercentageChange.toFixed(2)}%)</h3>
+        <h3>Projected Change: $${projectedChange.toFixed(2)}
+            <span class="${projectedChangeColor}">(${projectedPercentageChange.toFixed(2)}%)</span>
+        </h3>
     `;
 }
 
@@ -172,7 +278,6 @@ function toggleChartVisibility() {
     if (holdings.length === 0) {
         chartSection.style.display = 'none';
 
-        // Destroy the chart instance if it exists
         if (performanceChart) {
             performanceChart.destroy();
             performanceChart = null;
@@ -180,7 +285,6 @@ function toggleChartVisibility() {
     } else {
         chartSection.style.display = 'block';
 
-        // Initialize the chart if it hasn't been initialized yet
         if (!performanceChart) {
             initializeChart();
         }
@@ -299,7 +403,10 @@ function updatePerformanceChart() {
 
         // Iterate over each stock to accumulate portfolio value
         holdings.forEach(stock => {
+            console.log('stock:', stock);
             const data = holdingsHistory[stock.symbol];
+            console.log('symbol data:',holdingsHistory);
+            console.log('data:', data);
             if (data && data.historicalData) {
                 const quantity = stock.quantity || 0;
 
@@ -418,16 +525,14 @@ function updatePerformanceChart() {
 
 function fetchHistoricalData(symbol) {
     return new Promise((resolve, reject) => {
-        // Set a default period (e.g., '1y' for 1 year)
         const period = '1y';
 
         fetch(`http://127.0.0.1:5000/api/stock/${symbol}/history?period=${period}`)
             .then((response) => response.json())
             .then((data) => {
                 // Debugging: Log the fetched historical data
-                console.log(`Historical data for ${symbol}:, data`);
+                console.log(`Historical data for ${symbol}:`, data);
 
-                // Check if historical data contains errors
                 if (data.error) {
                     alert(`Error fetching historical data for ${symbol}: ${data.error}`);
                     console.error(`Error fetching historical data for ${symbol}: ${data.error}`);
@@ -435,10 +540,8 @@ function fetchHistoricalData(symbol) {
                     return;
                 }
 
-                // Store historical data
                 if (holdingsHistory[symbol]) {
                     holdingsHistory[symbol]['historicalData'] = data;
-                    console.log('hohlding histroy:', holdingsHistory)
                     resolve();
                 } else {
                     console.error(`stockData[${symbol}] is undefined`);
