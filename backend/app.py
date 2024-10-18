@@ -280,11 +280,32 @@ def get_holdings():
     except Exception as e:
         return jsonify({'error': 'Unable to fetch holdings: ' + str(e)}), 500
 
+@app.route('/api/update-stock/<int:holding_id>', methods=['PUT'])
+def update_stock(holding_id):
+    try:
+        data = request.get_json()
+        new_quantity = data.get('quantity')
+        new_purchase_price = data.get('purchasePrice')
+        
+        if new_quantity is None or new_purchase_price is None:
+                return jsonify({'error': 'Invalid input data'}), 400
 
+        holding = Holding.query.filter_by(id=holding_id, user_id=current_user.id).first()
 
-@app.route('/auth')
-def auth():
-    return render_template('login.html')
+        if not holding:
+                return jsonify({'error': 'Holding not found or unauthorized'}), 404
+
+        holding.quantity = new_quantity
+        holding.purchase_price = new_purchase_price
+        db.session.commit()
+        
+        return jsonify({'message': 'Stock updated successfully!'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"Error updating stock: {e}")
+        traceback.print_exc()
+        return jsonify({'error': 'Failed to update stock.'}), 500
 
 
 @app.route('/')

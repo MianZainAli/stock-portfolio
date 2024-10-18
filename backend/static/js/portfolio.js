@@ -64,6 +64,91 @@ function removeStock(button) {
     });
 }
 
+function editStock(button) {
+    const row = button.closest('.stock-row');
+    const holdingId = row.getAttribute('data-holding-id');
+    const stockURGL = row.querySelector('.stock-unrealized');
+    
+    // Toggle between editable fields and static text
+    const quantityField = row.querySelector('.stock-quantity');
+    const purchasePriceField = row.querySelector('.stock-purchase-price');
+    
+    if (button.textContent === 'Edit') {
+        // Turn static text into input fields
+        const quantityValue = parseInt(quantityField.textContent);
+        const purchasePriceValue = parseFloat(purchasePriceField.textContent.slice(1)); // remove '$' symbol
+
+        quantityField.innerHTML = `<input type="number" value="${quantityValue}" class="edit-quantity">`;
+        purchasePriceField.innerHTML = `<input type="number" step="0.01" value="${purchasePriceValue}" class="edit-purchase-price">`;
+
+        button.textContent = 'Save';  // Change button to "Save"
+    } else {
+        // Get new values from input fields
+        const newQuantity = parseInt(row.querySelector('.edit-quantity').value);
+        const newPurchasePrice = parseFloat(row.querySelector('.edit-purchase-price').value);
+        
+
+        // Call backend to update the stock details
+        updateStockInDatabase(holdingId, newQuantity, newPurchasePrice)
+        .then(() => {
+            // Update the row with new values
+            quantityField.textContent = newQuantity;
+            purchasePriceField.textContent = `$${newPurchasePrice.toFixed(2)}`;
+
+            const holdingIndex = holdings.findIndex(stock => stock.id == holdingId);
+            if (holdingIndex !== -1) {
+                // Update the values in the holdings array
+                holdings[holdingIndex].quantity = newQuantity;
+                holdings[holdingIndex].purchasePrice = newPurchasePrice;
+
+                // Optionally, fetch the current price to recalculate gain/loss if needed
+                holdings[holdingIndex].unrealized_gain_loss = 
+                    (holdings[holdingIndex].currentPrice - newPurchasePrice) * newQuantity;
+                
+                stockURGL.textContent = `$${holdings[holdingIndex].unrealized_gain_loss.toFixed(2)}`;
+            }
+
+            updatePortfolioSummary(); // Recalculate the portfolio summary
+            toggleChartVisibility();  // Update the chart
+            updatePerformanceChart(); // Refresh performance chart
+
+            button.textContent = 'Edit';  // Change button back to "Edit"
+        })
+        .catch(error => {
+            console.error('Error updating stock:', error);
+            alert('Failed to update stock.');
+        });
+    }
+}
+
+async function updateStockInDatabase(holdingId, quantity, purchasePrice) {
+    try {
+        console.log('updating stock:', holdingId, quantity, purchasePrice);
+        const response = await fetch(`http://127.0.0.1:5000/api/update-stock/${holdingId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                credentials: 'include',
+            },
+            body: JSON.stringify({
+                quantity: quantity,
+                purchasePrice: purchasePrice
+            })
+        });
+        const data = await response.json();
+        console.log('data:', data);
+        if (data.message) {
+            console.log('Stock updated successfully.');
+        } else {
+            throw new Error(data.error);
+        }
+    } catch (error) {
+        console.error('Error updating stock:', error);
+        throw error;
+    }
+}
+
+
 function addStock(event) {
     event.preventDefault();
 
@@ -146,6 +231,7 @@ function addStock(event) {
                 <div class="stock-unrealized">$${unrealizedGainLoss}</div>
                 <div class="stock-actions">
                     <button class="remove-btn" onclick="removeStock(this)">Remove</button>
+                    <button class="edit-btn" onclick="editStock(this)">Edit</button>
                 </div>`
             ;
             // Append the new row to the holdings section
@@ -182,6 +268,7 @@ function loadHoldings() {
                     <div class="stock-unrealized">$${stock.unrealized_gain_loss.toFixed(2)}</div>
                     <div class="stock-actions">
                         <button class="remove-btn" onclick="removeStock(this)">Remove</button>
+                        <button class="edit-btn" onclick="editStock(this)">Edit</button>
                     </div>`;
 
                 savedStockSection.appendChild(newRow);
