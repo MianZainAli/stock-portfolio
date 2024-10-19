@@ -1,0 +1,19 @@
+# Ignore environment variable files
+.env
+
+# Ignore Python bytecode
+__pycache__/
+*.pyc
+
+# Ignore virtual environments
+venv/
+env/
+
+# Ignore log files
+*.log
+
+# Ignore node_modules for JavaScript/Node.js projects
+node_modules/
+
+# Ignore macOS system files
+.DS_Store
