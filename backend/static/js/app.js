@@ -37,7 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Function to add a stock
 function addStock(symbol, quantity) {
-    console.log(`Adding stock: ${symbol}, Quantity: ${quantity}`);
     // Fetch stock data from backend
     fetch(`http://127.0.0.1:5000/api/stock/${symbol}`)
         .then((response) => response.json())
@@ -149,7 +148,7 @@ function fetchHistoricalData(symbol) {
             .then((response) => response.json())
             .then((data) => {
                 // Debugging: Log the fetched historical data
-                console.log(`Historical data for ${symbol}:`, data);
+                log(`Historical data for ${symbol}:`, data);
 
                 // Check if historical data contains errors
                 if (data.error) {
@@ -361,9 +360,6 @@ function updatePerformanceChart() {
                 y: totalProjectedValue,
             });
         });
-
-        // Debugging: Log the projectedPortfolioData
-        console.log('projectedPortfolioData:', projectedPortfolioData);
 
         // Prepare the datasets for the chart
         const datasets = [

@@ -39,9 +39,7 @@ function removeStock(button) {
     .then(data => {
         if (data.message) {
             row.remove();
-            console.log(' before holdings:', holdings);
             holdings = holdings.filter(stock => stock.id != holdingId);
-            console.log('deleted history:', holdingsHistory[stockSymbol]);
             const remainingHoldings = holdings.filter(stock => stock.symbol === stockSymbol);
 
             // If no more holdings for this stock symbol, delete its history
@@ -123,7 +121,6 @@ function editStock(button) {
 
 async function updateStockInDatabase(holdingId, quantity, purchasePrice) {
     try {
-        console.log('updating stock:', holdingId, quantity, purchasePrice);
         const response = await fetch(`http://127.0.0.1:5000/api/update-stock/${holdingId}`, {
             method: 'PUT',
             headers: {
@@ -136,7 +133,6 @@ async function updateStockInDatabase(holdingId, quantity, purchasePrice) {
             })
         });
         const data = await response.json();
-        console.log('data:', data);
         if (data.message) {
             console.log('Stock updated successfully.');
         } else {
@@ -289,10 +285,7 @@ function loadHoldings() {
                         historicalData: stock.historicalData || []
                     };
                 } 
-                console.log('holdingshistory:', holdingsHistory);
             });
-
-            console.log('holdings data:', holdingsHistory);
 
             updatePortfolioSummary();
             toggleChartVisibility(); 
@@ -490,10 +483,7 @@ function updatePerformanceChart() {
 
         // Iterate over each stock to accumulate portfolio value
         holdings.forEach(stock => {
-            console.log('stock:', stock);
             const data = holdingsHistory[stock.symbol];
-            console.log('symbol data:',holdingsHistory);
-            console.log('data:', data);
             if (data && data.historicalData) {
                 const quantity = stock.quantity || 0;
 
@@ -519,9 +509,6 @@ function updatePerformanceChart() {
                 x: date,
                 y: portfolioHistory[date],
             }));
-
-        // Debugging: Log the sortedPortfolioData
-        console.log('sortedPortfolioData:', sortedPortfolioData);
 
         if (sortedPortfolioData.length === 0) {
             console.warn('No portfolio data to display.');
@@ -560,8 +547,6 @@ function updatePerformanceChart() {
             });
         });
 
-        // Debugging: Log the projectedPortfolioData
-        console.log('projectedPortfolioData:', projectedPortfolioData);
 
         // Prepare the datasets for the chart
         const datasets = [
@@ -617,9 +602,6 @@ function fetchHistoricalData(symbol) {
         fetch(`http://127.0.0.1:5000/api/stock/${symbol}/history?period=${period}`)
             .then((response) => response.json())
             .then((data) => {
-                // Debugging: Log the fetched historical data
-                console.log(`Historical data for ${symbol}:`, data);
-
                 if (data.error) {
                     alert(`Error fetching historical data for ${symbol}: ${data.error}`);
                     console.error(`Error fetching historical data for ${symbol}: ${data.error}`);
