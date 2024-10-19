@@ -5,24 +5,43 @@
     <!-- Meta Tags -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Projected Portfolio</title>
+    <title>Portfolio Performance Tracker</title>
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Projected Stock Portfolio | Real-Time Investment Forecast" />
+    <meta property="og:description" content="Track your stock portfolio performance with real-time updates and projections. Add stocks, manage your investments, and view portfolio summaries." />
+    {% comment %} Links and name will be change according to your website {% endcomment %}
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://yourwebsite.com/projected-portfolio" />
+    <meta property="og:image" content="https://yourwebsite.com/images/portfolio-preview.jpg" />
+    <meta property="og:site_name" content="Your Stock Portfolio" />
+    <meta property="og:locale" content="en_US" />
 
-    <!-- Google Fonts (Montserrat) -->
+    <link rel="canonical" href="https://Changeit.com/projected-portfolio" />
+ 
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
 
-    <!-- Animate.css (Optional, if you use it) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
-    <!-- AOS CSS -->
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet" />
 
-    <!-- Your Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
         integrity="sha384-DyZ88mC6Up2uqS4h/KRgHuoeGwBcD4Ng9SiP4dIRy0EXTlnuz47vAwmeGwVChigm" crossorigin="anonymous" />
 
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "FinancialProduct",
+            "name": "Projected Stock Portfolio Tracker",
+            "description": "Real-time stock portfolio performance tracker with projection features.",
+            "provider": {
+            "@type": "Organization",
+            "name": "Your Website Name"
+            }
+        }
+        </script>
+            
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Luxon Library -->

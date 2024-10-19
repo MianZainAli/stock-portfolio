@@ -74,10 +74,19 @@ class Holding(db.Model):
     user_id = db.Column(db.String(64), db.ForeignKey('users.id'), nullable=False)
         
         
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/portfolio')
+@login_required
+def portfolio():
+    return render_template('portfolio.html')
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, user_id)
-
 
 @app.route('/api/get-user', methods=['GET'])
 @login_required
@@ -135,81 +144,6 @@ def logout():
     session.clear()  # Clears all session data
     print(f"After logout: {session}")
     return redirect(url_for('index'))
-
-@app.route('/api/save-stock', methods=['POST'])
-@login_required  # Ensure the user is logged in to save stock
-def save_stock():
-    try:
-        # Get the current user's ID
-        user_id = current_user.id
-
-        # Get stock data from the POST request body (JSON)
-        stock_data = request.json
-        symbol = stock_data.get('symbol').upper()
-        quantity = stock_data.get('quantity')
-        purchase_price = stock_data.get('purchasePrice')
-
-        # Validate input data
-        if not symbol or quantity is None or purchase_price is None:
-            return jsonify({'error': 'Invalid input data'}), 400
-
-        new_holding = Holding(
-            symbol=symbol,
-            quantity=quantity,
-            purchase_price=purchase_price,
-            user_id=user_id
-        )
-        db.session.add(new_holding)
-
-        db.session.commit()
-
-        return jsonify({'message': 'Stock saved successfully!', 'stockid':new_holding.id}), 200
-    except Exception as e:
-        db.session.rollback()  # Rollback in case of error
-        logging.error(f"Error saving stock: {e}")
-        traceback.print_exc()
-        return jsonify({'error': 'Failed to save stock.'}), 500
-
-@app.route('/api/delete-stock/<int:holding_id>', methods=['DELETE'])
-@login_required
-def delete_stock(holding_id):
-    try:
-        user_id = current_user.id
-        # Find the specific holding by its id and user_id
-        holding = Holding.query.filter_by(id=holding_id, user_id=user_id).first()
-        
-        if holding:
-            db.session.delete(holding)
-            db.session.commit()
-            return jsonify({'message': f'Holding {holding.symbol} deleted successfully.'}), 200
-        else:
-            return jsonify({'error': 'Holding not found.'}), 404
-    except Exception as e:
-        return jsonify({'error': 'Error deleting holding: ' + str(e)}), 500
-
-
-@app.route('/api/stock/<symbol>/history', methods=['GET'])
-def get_stock_history(symbol):
-    try:
-        period = request.args.get('period', '1y')
-        logging.debug(f"Fetching historical data for {symbol} with period {period}")
-        hist = yf.download(symbol, period=period)  # Removed session=session
-
-        if hist.empty:
-            raise ValueError(f"No historical data found for symbol: {symbol}")
-
-        hist.reset_index(inplace=True)
-        hist['Date'] = hist['Date'].dt.strftime('%Y-%m-%d')
-        hist = hist[['Date', 'Close']]
-        data = hist.to_dict(orient='records')
-
-        logging.debug(f"Historical data for {symbol}: {data[:5]}...")  # Log first 5 records
-
-        return jsonify(data), 200
-    except Exception as e:
-        logging.error(f"Error fetching historical data for {symbol}: {e}")
-        traceback.print_exc()
-        return jsonify({'error': f"Failed to fetch historical data for {symbol}. {str(e)}"}), 500
 
 @app.route('/api/get-holdings', methods=['GET'])
 @login_required
@@ -280,7 +214,56 @@ def get_holdings():
     except Exception as e:
         return jsonify({'error': 'Unable to fetch holdings: ' + str(e)}), 500
 
+
+@app.route('/api/save-stock', methods=['POST'])
+@login_required 
+def save_stock():
+    try:
+        user_id = current_user.id
+
+        stock_data = request.json
+        symbol = stock_data.get('symbol').upper()
+        quantity = stock_data.get('quantity')
+        purchase_price = stock_data.get('purchasePrice')
+
+        if not symbol or quantity is None or purchase_price is None:
+            return jsonify({'error': 'Invalid input data'}), 400
+
+        new_holding = Holding(
+            symbol=symbol,
+            quantity=quantity,
+            purchase_price=purchase_price,
+            user_id=user_id
+        )
+        db.session.add(new_holding)
+
+        db.session.commit()
+
+        return jsonify({'message': 'Stock saved successfully!', 'stockid':new_holding.id}), 200
+    except Exception as e:
+        db.session.rollback()  # Rollback in case of error
+        logging.error(f"Error saving stock: {e}")
+        traceback.print_exc()
+        return jsonify({'error': 'Failed to save stock.'}), 500
+
+@app.route('/api/delete-stock/<int:holding_id>', methods=['DELETE'])
+@login_required
+def delete_stock(holding_id):
+    try:
+        user_id = current_user.id
+        holding = Holding.query.filter_by(id=holding_id, user_id=user_id).first()
+        
+        if holding:
+            db.session.delete(holding)
+            db.session.commit()
+            return jsonify({'message': f'Holding {holding.symbol} deleted successfully.'}), 200
+        else:
+            return jsonify({'error': 'Holding not found.'}), 404
+    except Exception as e:
+        return jsonify({'error': 'Error deleting holding: ' + str(e)}), 500
+
 @app.route('/api/update-stock/<int:holding_id>', methods=['PUT'])
+@login_required
 def update_stock(holding_id):
     try:
         data = request.get_json()
@@ -308,15 +291,30 @@ def update_stock(holding_id):
         return jsonify({'error': 'Failed to update stock.'}), 500
 
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+@app.route('/api/stock/<symbol>/history', methods=['GET'])
+def get_stock_history(symbol):
+    try:
+        period = request.args.get('period', '1y')
+        logging.debug(f"Fetching historical data for {symbol} with period {period}")
+        hist = yf.download(symbol, period=period)  # Removed session=session
 
-@app.route('/portfolio')
-@login_required
-def portfolio():
-    return render_template('portfolio.html')
+        if hist.empty:
+            raise ValueError(f"No historical data found for symbol: {symbol}")
 
+        hist.reset_index(inplace=True)
+        hist['Date'] = hist['Date'].dt.strftime('%Y-%m-%d')
+        hist = hist[['Date', 'Close']]
+        data = hist.to_dict(orient='records')
+
+        logging.debug(f"Historical data for {symbol}: {data[:5]}...")  
+
+        return jsonify(data), 200
+    except Exception as e:
+        logging.error(f"Error fetching historical data for {symbol}: {e}")
+        traceback.print_exc()
+        return jsonify({'error': f"Failed to fetch historical data for {symbol}. {str(e)}"}), 500
+
+# Cache for stock data
 stock_cache = {}
 
 @app.route('/api/stock/<symbol>', methods=['GET'])
