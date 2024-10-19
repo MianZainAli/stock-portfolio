@@ -6,13 +6,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Portfolio Performance Tracker</title>
+    <link rel="icon" href="{{ url_for('static', filename='assets/favicon.ico') }}" type="image/x-icon">
     <!-- Open Graph Meta Tags -->
     <meta property="og:title" content="Projected Stock Portfolio | Real-Time Investment Forecast" />
     <meta property="og:description" content="Track your stock portfolio performance with real-time updates and projections. Add stocks, manage your investments, and view portfolio summaries." />
-    {% comment %} Links and name will be change according to your website {% endcomment %}
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://projectedportfolio.com/projected-portfolio" />
-    <meta property="og:image" content="https://projectedportfolio.com/images/pic.png" />
+    <meta property="og:image" content="{{ url_for('static', filename='assets/favicon.ico') }}" />
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Projected Stock Portfolio | Real-Time Investment Forecast">
     <meta property="og:site_name" content="Your Stock Portfolio" />
     <meta property="og:locale" content="en_US" />
 
